@@ -2,7 +2,7 @@ ENV["PATH"] = ENV["PATH"] * ":" * homedir() * "/Library/TinyTeX/bin/universal-da
 using HTTP, Sockets, Weave, Base64
 
 const PORT = 8080
-const EDITOR_HTML = read("editor.html", String)
+const EDITOR_HTML = read("juleaf.html", String)
 
 # Default preamble
 const DEFAULT_PREAMBLE = """
