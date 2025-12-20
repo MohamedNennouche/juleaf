@@ -1,5 +1,4 @@
-# 📝 Julia Weave Editor
-
+# 📝 Juleaf
 > A free, open-source alternative to Overleaf for Julia developers. Write academic papers with live code execution and instant PDF preview.
 
 ![Julia](https://img.shields.io/badge/Julia-1.9+-9558B2?logo=julia)
