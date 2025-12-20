@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Julia Weave Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        .header h1 {
+            font-size: 18px;
+            font-weight: 500;
+            position: absolute;
+            left: 20px;
+        }
+        
+        .project-title {
+            flex: 1;
+            max-width: 300px;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: white;
+            font-size: 16px;
+            padding: 4px 8px;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+        
+        .project-title:hover {
+            border-bottom-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .project-title:focus {
+            outline: none;
+            border-bottom-color: #3498db;
+        }
+        
+        .project-title::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .compile-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .compile-btn:hover {
+            background: #2980b9;
+        }
+        
+        .compile-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            font-size: 12px;
+            color: #ecf0f1;
+            position: absolute;
+            right: 20px;
+        }
+        
+        .container {
+            display: flex;
+            height: calc(100vh - 48px);
+        }
+        
+        .container.panel-open {
+            height: calc(100vh - 48px - 250px);
+        }
+        
+        .editor-pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-right: none;
+            min-width: 200px;
+        }
+        
+        .resizer {
+            width: 5px;
+            background: #ccc;
+            cursor: col-resize;
+            flex-shrink: 0;
+        }
+        
+        .resizer:hover {
+            background: #3498db;
+        }
+        
+        .editor-header {
+            background: #ecf0f1;
+            padding: 8px 12px;
+            font-size: 12px;
+            color: #555;
+            border-bottom: 1px solid #ccc;
+        }
+        
+        .editor {
+            flex: 1;
+            border: none;
+            padding: 16px;
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+        }
+        
+        .preview-pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #f8f9fa;
+        }
+        
+        .preview-header {
+            background: #ecf0f1;
+            padding: 8px 12px;
+            font-size: 12px;
+            color: #555;
+            border-bottom: 1px solid #ccc;
+        }
+        
+        .pdf-viewer {
+            flex: 1;
+            border: none;
+            background: white;
+        }
+        
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .console-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 250px;
+            background: #1e1e1e;
+            border-top: 2px solid #3498db;
+            display: none;
+            flex-direction: column;
+            z-index: 1000;
+        }
+        
+        .console-panel.visible {
+            display: flex;
+        }
+        
+        .console-header {
+            background: #2c2c2c;
+            padding: 8px 12px;
+            color: #ccc;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .console-close {
+            background: transparent;
+            border: none;
+            color: #ccc;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0 8px;
+        }
+        
+        .console-close:hover {
+            color: #fff;
+        }
+        
+        .console-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-size: 11px;
+            line-height: 1.5;
+            color: #d4d4d4;
+            white-space: pre-wrap;
+        }
+        
+        .console-content .warning {
+            color: #f39c12;
+        }
+        
+        .console-content .error {
+            color: #e74c3c;
+        }
+        
+        .console-content .success {
+            color: #2ecc71;
+        }
+        
+        .settings-textarea {
+            width: 100%;
+            height: 100%;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border: none;
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-size: 12px;
+            padding: 12px;
+            resize: none;
+            outline: none;
+        }
+        
+        /* Dark theme */
+        body.dark-theme {
+            background: #1e1e1e;
+        }
+        
+        body.dark-theme .header {
+            background: #1a1a1a;
+        }
+        
+        body.dark-theme .editor {
+            background: #2d2d2d;
+            color: #d4d4d4;
+        }
+        
+        body.dark-theme .editor-header,
+        body.dark-theme .preview-header {
+            background: #252525;
+            color: #ccc;
+            border-bottom-color: #444;
+        }
+        
+        body.dark-theme .preview-pane {
+            background: #2d2d2d;
+        }
+        
+        body.dark-theme .editor-pane {
+            border-right-color: #444;
+        }
+        
+        body.dark-theme .resizer {
+            background: #444;
+        }
+        
+        body.dark-theme .resizer:hover {
+            background: #3498db;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Juleaf</h1>
+        <input type="text" class="project-title" id="projectTitle" value="My Document" placeholder="Project Title">
+        <select class="compile-btn" id="templateSelect" onchange="loadTemplate()" style="padding: 8px 12px;">
+            <option value="">Templates...</option>
+            <option value="basic">Basic Document</option>
+            <option value="beamer">Beamer Presentation</option>
+            <option value="ieee">IEEE Paper</option>
+            <option value="article">Academic Article</option>
+        </select>
+        <button class="compile-btn" onclick="compile()">Compile</button>
+        <button class="compile-btn" onclick="toggleConsole()">Console</button>
+        <button class="compile-btn" onclick="toggleSettings()">LaTeX Packages</button>
+        <button class="compile-btn" onclick="toggleTheme()" id="themeBtn">Dark Mode</button>
+        <span class="status" id="status">Ready</span>
+    </div>
+    
+    <div class="container">
+        <div class="editor-pane">
+            <div class="editor-header">document.jmd</div>
+            <textarea class="editor" id="editor">---
+title: "My Document"
+---
+
+## Introduction
+
+Welcome to this example document. Below is a plot of the sine function.
+```julia ; echo=true
+using CairoMakie
+
+x = range(0, 2π, 100)
+y = sin.(x)
+
+fig = Figure(size = (600, 400))
+ax = Axis(fig[1, 1], 
+    xlabel = "x", 
+    ylabel = "sin(x)",
+    title = "Sine Wave"
+)
+lines!(ax, x, y, color = :blue, linewidth = 2)
+fig
+```
+
+\begin{theorem}
+This is a theorem environment.
+\end{theorem}
+
+## Analysis
+
+The sine function oscillates with period $2\pi$.
+
+### Mathematical Details
+
+The derivative is:
+$$
+\frac{d}{dx}\sin(x) = \cos(x)
+$$
+```julia ; echo=true
+# More code
+println("Hello from Julia!")
+```
+</textarea>
+        </div>
+        
+        <div class="resizer" id="resizer"></div>
+        
+        <div class="preview-pane" id="previewPane">
+            <div class="preview-header">Preview (PDF)</div>
+            <iframe class="pdf-viewer" id="preview"></iframe>
+        </div>
+    </div>
+    
+    <script>
+        const editor = document.getElementById('editor');
+        const preview = document.getElementById('preview');
+        const status = document.getElementById('status');
+        const compileBtn = document.querySelector('.compile-btn');
+        const resizer = document.getElementById('resizer');
+        const editorPane = document.querySelector('.editor-pane');
+        const previewPane = document.getElementById('previewPane');
+        
+        let compiling = false;
+        let autoCompileTimeout = null;
+        let currentPage = 1;
+        let isFirstCompile = true;
+        let isResizing = false;
+        
+        // Templates
+        const templates = {
+            basic: `---
+title: "My Document"
+---
+
+## Introduction
+
+Your content here.
+
+\`\`\`julia ; echo=true
+using CairoMakie
+x = range(0, 2π, 100)
+y = sin.(x)
+fig = Figure(size = (600, 400))
+lines(x, y)
+fig
+\`\`\``,
+            
+            beamer: `---
+title: "Presentation Title"
+subtitle: "Optional Subtitle"
+author: "Your Name\\\\\\\\Your Institution"
+date: "\\\\today"
+output:
+  beamer_presentation:
+    theme: "Madrid"
+    colortheme: "default"
+aspectratio: 169
+---
+
+# Introduction
+
+## Motivation
+
+- First key point
+- Second key point  
+- Third key point
+
+## Research Question
+
+What problem are we solving?
+
+# Background
+
+## Related Work
+
+Previous studies:
+
+- Study 1: Main finding
+- Study 2: Important result
+- Study 3: Key contribution
+
+# Methodology
+
+## Approach
+
+\`\`\`julia ; echo=true
+using CairoMakie
+x = range(0, 10, 100)
+y = sin.(x)
+fig = Figure(size = (800, 400))
+ax = Axis(fig[1, 1], xlabel = "X", ylabel = "Y")
+lines!(ax, x, y, linewidth = 2)
+fig
+\`\`\`
+
+# Results
+
+## Key Findings
+
+Our analysis shows significant improvement.
+
+| Method | Accuracy | Speed |
+|--------|----------|-------|
+| Ours   | 95%      | Fast  |
+| Baseline | 87%    | Slow  |
+
+# Conclusion
+
+## Summary
+
+- Main contribution
+- Future work
+- Questions?`,
+            
+   ieee: `---
+documentclass: IEEEtran
+classoption: conference
+header-includes:
+  - \\usepackage{amsmath,amssymb}
+  - \\newtheorem{theorem}{Theorem}
+  - \\newtheorem{lemma}{Lemma}
+  - \\newtheorem{definition}{Definition}
+  - \\newtheorem{corollary}{Corollary}
+---
+
+\\\\title{Conference Paper Title}
+
+\\\\author{
+\\\\IEEEauthorblockN{First Author}
+\\\\IEEEauthorblockA{\\\\textit{Department} \\\\
+\\\\textit{University}\\\\
+City, Country \\\\
+email@domain.com}
+\\\\and
+\\\\IEEEauthorblockN{Second Author}
+\\\\IEEEauthorblockA{\\\\textit{Department} \\\\
+\\\\textit{University}\\\\
+City, Country \\\\
+email@domain.com}
+}
+
+\\\\maketitle
+
+\\\\begin{abstract}
+Abstract text here (150--250 words).
+\\\\end{abstract}
+
+\\\\begin{IEEEkeywords}
+keyword1, keyword2, keyword3
+\\\\end{IEEEkeywords}
+
+# Introduction
+
+Introduction text.
+
+# Related Work
+
+Literature review.
+
+# Methodology
+
+## Problem Formulation
+
+$$
+\\\\min_{x} f(x) = \\\\sum_{i=1}^{n} (y_i - \\\\hat{y}_i)^2
+$$
+
+## Approach
+
+\`\`\`julia ; echo=true
+using Statistics
+n = 100
+x = randn(n)
+y = 2 .* x .+ randn(n) * 0.1
+\`\`\`
+
+# Results
+
+\`\`\`julia ; echo=true
+using CairoMakie
+fig = Figure(size = (600, 400))
+ax = Axis(fig[1, 1], xlabel = "X", ylabel = "Y")
+scatter!(ax, x, y)
+fig
+\`\`\`
+
+# Conclusion
+
+Summary and future work.
+
+\\\\begin{thebibliography}{00}
+\\\\bibitem{b1} Author, "Title," Journal, vol. X, pp. Y-Z, Year.
+\\\\end{thebibliography}`
+,
+            article: `---
+title: "Article Title"
+author: "Your Name"
+date: "\\\\today"
+abstract: |
+  Abstract (150-250 words).
+---
+
+# Introduction
+
+Background and motivation.
+
+$$
+f(x) = \\\\int_{0}^{\\\\infty} e^{-x^2} dx
+$$
+
+# Methodology
+
+\`\`\`julia ; echo=true
+using CairoMakie, Statistics
+data = randn(1000)
+fig = Figure(size = (700, 400))
+ax = Axis(fig[1, 1], xlabel = "Value", ylabel = "Frequency")
+hist!(ax, data, bins = 30)
+fig
+\`\`\`
+
+# Results
+
+\\\\begin{theorem}
+Main theoretical result.
+\\\\end{theorem}
+
+# Conclusion
+
+Summary and future directions.`
+        };
+        
+        function loadTemplate() {
+            const select = document.getElementById('templateSelect');
+            const key = select.value;
+            
+            if (key && templates[key]) {
+                if (confirm('Load template? Current content will be replaced.')) {
+                    editor.value = templates[key];
+                    compile();
+                }
+                select.value = '';
+            }
+        }
+        
+        // Resizer functionality
+        resizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            
+            const containerWidth = document.querySelector('.container').offsetWidth;
+            const newEditorWidth = e.clientX;
+            const editorPercent = (newEditorWidth / containerWidth) * 100;
+            const previewPercent = 100 - editorPercent;
+            
+            if (editorPercent > 20 && editorPercent < 80) {
+                editorPane.style.flex = `0 0 ${editorPercent}%`;
+                previewPane.style.flex = `0 0 ${previewPercent}%`;
+            }
+        });
+        
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        });
+        
+        async function compile() {
+            if (compiling) return;
+            
+            compiling = true;
+            compileBtn.disabled = true;
+            status.textContent = 'Compiling...';
+            
+            try {
+                let content = editor.value;
+                
+                // Inject dark theme if enabled
+                const isDark = document.body.classList.contains('dark-theme');
+                if (isDark) {
+                    if (content.trim().startsWith('---')) {
+                        const firstEnd = content.indexOf('---', 3);
+                        if (firstEnd !== -1) {
+                            const yamlSection = content.slice(0, firstEnd);
+                            
+                            if (yamlSection.includes('header-includes:')) {
+                                const lines = content.split('\n');
+                                const headerIndex = lines.findIndex(l => l.includes('header-includes:'));
+                                
+                                lines.splice(headerIndex + 1, 0, 
+                                    '  - \\usepackage{xcolor}',
+                                    '  - \\pagecolor[RGB]{30,30,30}',
+                                    '  - \\color[RGB]{220,220,220}'
+                                );
+                                content = lines.join('\n');
+                            } else {
+                                const darkTheme = '\nheader-includes:\n  - \\usepackage{xcolor}\n  - \\pagecolor[RGB]{30,30,30}\n  - \\color[RGB]{220,220,220}\n';
+                                content = content.slice(0, firstEnd) + darkTheme + content.slice(firstEnd);
+                            }
+                        }
+                    }
+                }
+                
+                const packages = document.getElementById('custom-packages').value;
+                
+                const response = await fetch('/compile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain',
+                        'X-LaTeX-Packages': btoa(packages)
+                    },
+                    body: content
+                });
+                
+                const logsHeader = response.headers.get('X-Compilation-Logs');
+                if (logsHeader) {
+                    const logs = atob(logsHeader);
+                    displayLogs(logs, !isFirstCompile);
+                }
+                
+                if (response.ok) {
+                    if (isFirstCompile) {
+                        preview.src = '/output.pdf';
+                        isFirstCompile = false;
+                    } else {
+                        try {
+                            preview.contentWindow.location.reload();
+                        } catch (e) {
+                            const timestamp = new Date().getTime();
+                            preview.src = '/output.pdf?t=' + timestamp;
+                        }
+                    }
+                    
+                    status.textContent = 'Compiled successfully';
+                    setTimeout(() => {
+                        status.textContent = 'Ready';
+                    }, 2000);
+                } else {
+                    const error = await response.text();
+                    status.textContent = 'Compilation failed';
+                    displayLogs(error, true);
+                    console.error('Compilation error:', error);
+                }
+                
+                isFirstCompile = false;
+            } catch (error) {
+                status.textContent = 'Error';
+                console.error('Error:', error);
+                alert('Error: ' + error.message);
+            } finally {
+                compiling = false;
+                compileBtn.disabled = false;
+            }
+        }
+        
+        editor.addEventListener('input', () => {
+            clearTimeout(autoCompileTimeout);
+            autoCompileTimeout = setTimeout(() => {
+                compile();
+            }, 500);
+        });
+        
+        document.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                e.preventDefault();
+                compile();
+            }
+        });
+        
+        setTimeout(() => compile(), 500);
+        
+        function toggleConsole() {
+            const consolePanel = document.getElementById('console');
+            const settingsPanel = document.getElementById('settings');
+            const container = document.querySelector('.container');
+            
+            if (settingsPanel.classList.contains('visible')) {
+                settingsPanel.classList.remove('visible');
+            }
+            
+            consolePanel.classList.toggle('visible');
+            
+            if (consolePanel.classList.contains('visible')) {
+                container.classList.add('panel-open');
+            } else {
+                container.classList.remove('panel-open');
+            }
+        }
+        
+        function toggleSettings() {
+            const consolePanel = document.getElementById('console');
+            const settingsPanel = document.getElementById('settings');
+            const container = document.querySelector('.container');
+            
+            if (consolePanel.classList.contains('visible')) {
+                consolePanel.classList.remove('visible');
+            }
+            
+            settingsPanel.classList.toggle('visible');
+            
+            if (settingsPanel.classList.contains('visible')) {
+                container.classList.add('panel-open');
+            } else {
+                container.classList.remove('panel-open');
+            }
+        }
+        
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+            const isDark = document.body.classList.contains('dark-theme');
+            document.getElementById('themeBtn').textContent = isDark ? 'Light Mode' : 'Dark Mode';
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+        
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-theme');
+            document.getElementById('themeBtn').textContent = 'Light Mode';
+        }
+        
+        function displayLogs(logs, shouldAutoShow = true) {
+            const consoleOutput = document.getElementById('console-output');
+            
+            let formatted = logs
+                .replace(/LaTeX Warning:/g, '<span class="warning">LaTeX Warning:</span>')
+                .replace(/Warning:/g, '<span class="warning">Warning:</span>')
+                .replace(/Error:/g, '<span class="error">Error:</span>')
+                .replace(/ERROR:/g, '<span class="error">ERROR:</span>');
+            
+            consoleOutput.innerHTML = formatted;
+        }
+        
+        // Save and load custom packages
+        document.getElementById('custom-packages').addEventListener('input', (e) => {
+            localStorage.setItem('latex-packages', e.target.value);
+        });
+        
+        const defaultPackages = `\\usepackage{amsthm}
+\\usepackage{amsmath}
+\\usepackage{amssymb}
+\\newtheorem{theorem}{Theorem}
+\\newtheorem{lemma}{Lemma}
+\\newtheorem{definition}{Definition}
+\\newtheorem{corollary}{Corollary}`;
+        
+        if (localStorage.getItem('latex-packages')) {
+            document.getElementById('custom-packages').value = localStorage.getItem('latex-packages');
+        } else {
+            document.getElementById('custom-packages').value = defaultPackages;
+            localStorage.setItem('latex-packages', defaultPackages);
+        }
+    </script>
+    
+    <div class="console-panel" id="console">
+        <div class="console-header">
+            <span>Compilation Console</span>
+            <button class="console-close" onclick="toggleConsole()">×</button>
+        </div>
+        <div class="console-content" id="console-output">
+            No compilation output yet...
+        </div>
+    </div>
+    
+    <div class="console-panel" id="settings">
+        <div class="console-header">
+            <span>LaTeX Packages & Theorem Environments</span>
+            <button class="console-close" onclick="toggleSettings()">×</button>
+        </div>
+        <div class="console-content">
+            <textarea id="custom-packages" class="settings-textarea" placeholder="Add custom LaTeX packages, one per line:
+\usepackage{tikz}
+\usepackage{pgfplots}
+\newtheorem{proposition}{Proposition}"></textarea>
+        </div>
+    </div>
+</body>
+</html>
