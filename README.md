@@ -1,4 +1,4 @@
-# 📝 Juleaf (Overleaf like on julia)
+# 📝 Julia Weave Editor
 
 > A free, open-source alternative to Overleaf for Julia developers. Write academic papers with live code execution and instant PDF preview.
 
@@ -8,13 +8,13 @@
 
 ## ✨ Features
 
-- 🎨 **Split-pane interface** - Code on left, PDF preview on right
-- ⚡ **Live compilation** - Auto-compiles 2 seconds after typing
-- 📊 **Execute Julia code** - Run code blocks and embed plots directly
-- 🔬 **Publication-ready** - LaTeX equations, CairoMakie plots, professional formatting
-- 🚀 **No cloud dependency** - Runs completely offline on your machine
-- 💯 **Pure Julia** - No Jupyter or Python required
-- 🆓 **100% Free** - No subscriptions, no limits
+-  **Split-pane interface** - Code on left, PDF preview on right
+-  **Live compilation** - Auto-compiles 2 seconds after typing
+- **Execute Julia code** - Run code blocks and embed plots directly
+- **Publication-ready** - LaTeX equations, CairoMakie plots, professional formatting
+- **No cloud dependency** - Runs completely offline on your machine
+- **Pure Julia** - No Jupyter or Python required
+- **100% Free** - No subscriptions, no limits
 
 Perfect for research papers, technical reports, and scientific documentation.
 
@@ -22,17 +22,31 @@ Perfect for research papers, technical reports, and scientific documentation.
 
 ## 📋 Prerequisites
 
-### 1. Install Homebrew (macOS)
-If you don't have Homebrew:
+### 1. Install Julia
+
+**macOS:**
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+# Via Homebrew
+brew install julia
+
+# Or download from https://julialang.org/downloads/
 ```
 
-### 2. Install Julia
-Download from [julialang.org](https://julialang.org/downloads/) or via Homebrew:
+**Linux:**
 ```bash
-brew install julia
+# Ubuntu/Debian
+sudo apt-get install julia
+
+# Arch
+sudo pacman -S julia
+
+# Or download from https://julialang.org/downloads/
 ```
+
+**Windows:**
+- Download installer from [julialang.org/downloads](https://julialang.org/downloads/)
+- Run installer and follow prompts
+- Add Julia to PATH when prompted
 
 Verify installation:
 ```bash
@@ -40,31 +54,77 @@ julia --version
 # Should show: julia version 1.9 or higher
 ```
 
-### 3. Install LaTeX Engine
-Choose **one** option:
+### 2. Install LaTeX Engine
 
-**Option A: TinyTeX** (Recommended - smaller, ~200MB)
+**macOS:**
+
+*Option A: TinyTeX* (Recommended - ~200MB)
 ```bash
 brew install quarto
 quarto install tinytex
 ```
 
-**Option B: MacTeX** (Full distribution, ~4GB)
+*Option B: MacTeX* (~4GB)
 ```bash
 brew install --cask mactex-no-gui
 ```
 
-### 4. Configure PATH for TinyTeX (if using Option A)
-Add TinyTeX to your shell:
+**Linux:**
+
+*Option A: TinyTeX*
+```bash
+# Install Quarto first
+sudo wget https://quarto.org/download/latest/quarto-linux-amd64.deb
+sudo dpkg -i quarto-linux-amd64.deb
+quarto install tinytex
+```
+
+*Option B: TeX Live*
+```bash
+# Ubuntu/Debian
+sudo apt-get install texlive-xetex texlive-latex-extra
+
+# Arch
+sudo pacman -S texlive-core texlive-latexextra
+```
+
+**Windows:**
+
+*Option A: TinyTeX*
+```powershell
+# Install Quarto from https://quarto.org/docs/get-started/
+# Then in PowerShell/CMD:
+quarto install tinytex
+```
+
+*Option B: MiKTeX*
+- Download from [miktex.org](https://miktex.org/download)
+- Run installer
+
+### 3. Configure PATH (TinyTeX only)
+
+**macOS:**
 ```bash
 echo 'export PATH="$HOME/Library/TinyTeX/bin/universal-darwin:$PATH"' >> ~/.zshrc
 source ~/.zshrc
 ```
 
+**Linux:**
+```bash
+echo 'export PATH="$HOME/.TinyTeX/bin/x86_64-linux:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+**Windows:**
+TinyTeX auto-configures PATH. Restart terminal if needed.
+
 Verify:
 ```bash
+# macOS/Linux
 which xelatex
-# Should output: /Users/[your-username]/Library/TinyTeX/bin/universal-darwin/xelatex
+
+# Windows (PowerShell)
+where.exe xelatex
 ```
 
 ---
@@ -103,8 +163,14 @@ Wait for installation to complete (first time may take a few minutes).
 ## 🎯 Usage
 
 ### Start the Server
-From the project directory:
+
+**macOS/Linux:**
 ```bash
+julia --project=. server.jl
+```
+
+**Windows (PowerShell/CMD):**
+```powershell
 julia --project=. server.jl
 ```
 
@@ -121,7 +187,10 @@ Navigate to: **http://localhost:8080**
 
 1. **Edit code** in the left pane
 2. **Auto-compile**: Waits 2 seconds after you stop typing
-3. **Manual compile**: Click "Compile" button or press `Cmd+S` (Mac) / `Ctrl+S` (Windows/Linux)
+3. **Manual compile**: 
+   - Click "Compile" button
+   - Mac: `Cmd+S`
+   - Windows/Linux: `Ctrl+S`
 4. **View PDF** in the right pane
 
 ### Example Document Syntax
@@ -178,20 +247,36 @@ Pkg.add(["HTTP", "Weave", "CairoMakie"])
 ```
 
 ### "could not spawn xelatex"
-- Verify LaTeX installation: `which xelatex`
-- If empty, reinstall TinyTeX or add to PATH
-- Restart Julia after installing LaTeX
+
+**All platforms:**
+```bash
+# macOS/Linux
+which xelatex
+
+# Windows (PowerShell)
+where.exe xelatex
+```
+
+If empty:
+- **macOS**: Add TinyTeX to PATH (see Prerequisites), restart terminal
+- **Linux**: Add TinyTeX to PATH (see Prerequisites), run `source ~/.bashrc`
+- **Windows**: Reinstall TinyTeX or MiKTeX, restart terminal
+- **All**: Restart Julia after installing LaTeX
 
 ### "Compilation failed"
-- Check browser console (F12) for errors
-- View terminal output for detailed error messages
-- Ensure all Julia packages are installed
+- Check browser console (`F12`) for errors
+- View terminal output for detailed messages
+- Ensure all Julia packages installed
+- Verify LaTeX installation
 
 ### Port 8080 already in use
-Edit `server.jl` and change:
+Edit `server.jl`:
 ```julia
-const PORT = 8080  # Change to 3000 or another port
+const PORT = 3000  # Change to any available port
 ```
+
+### Windows-specific: "Permission denied"
+Run PowerShell/CMD as Administrator when installing packages.
 
 ---
 
@@ -266,13 +351,13 @@ Contributions welcome! Feel free to:
 
 ---
 
-## 📄 License
+##  License
 
 MIT License - Free for personal and commercial use.
 
 ---
 
-## 💡 Why This Exists
+## Why This Exists
 
 Overleaf is great but requires internet and has limitations. This project provides:
 - **Complete offline functionality**
