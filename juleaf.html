@@ -3,13 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Julia Weave Editor</title>
+    <title>Juleaf Editor</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -18,72 +14,51 @@
         }
         
         .header {
-            background: #2c3e50;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
             color: white;
-            padding: 12px 20px;
+            padding: 10px 20px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 20px;
+            gap: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
         
         .header h1 {
-            font-size: 18px;
-            font-weight: 500;
-            position: absolute;
-            left: 20px;
+            font-size: 20px;
+            font-weight: 600;
+            margin-right: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
-        .project-title {
-            flex: 1;
-            max-width: 300px;
-            background: transparent;
-            border: none;
-            border-bottom: 2px solid transparent;
-            color: white;
-            font-size: 16px;
-            padding: 4px 8px;
-            text-align: center;
-            transition: border-color 0.3s;
+        .header h1 img {
+            height: 28px;
+            width: auto;
         }
         
-        .project-title:hover {
-            border-bottom-color: rgba(255, 255, 255, 0.3);
-        }
-        
-        .project-title:focus {
-            outline: none;
-            border-bottom-color: #3498db;
-        }
-        
-        .project-title::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-        
-        .compile-btn {
+        .btn {
             background: #3498db;
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
+            padding: 8px 14px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
+            transition: all 0.2s;
         }
         
-        .compile-btn:hover {
-            background: #2980b9;
-        }
-        
-        .compile-btn:disabled {
-            background: #95a5a6;
-            cursor: not-allowed;
-        }
+        .btn:hover { background: #2980b9; transform: translateY(-1px); }
+        .btn:disabled { background: #95a5a6; cursor: not-allowed; transform: none; }
+        .btn.compile { background: #27ae60; }
+        .btn.compile:hover { background: #219a52; }
         
         .status {
             font-size: 12px;
             color: #ecf0f1;
-            position: absolute;
-            right: 20px;
+            padding: 4px 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 4px;
         }
         
         .container {
@@ -91,28 +66,24 @@
             height: calc(100vh - 48px);
         }
         
-        .container.panel-open {
-            height: calc(100vh - 48px - 250px);
-        }
+        .container.panel-open { height: calc(100vh - 48px - 280px); }
         
         .editor-pane {
             flex: 1;
             display: flex;
             flex-direction: column;
-            border-right: none;
             min-width: 200px;
         }
         
         .resizer {
-            width: 5px;
-            background: #ccc;
+            width: 6px;
+            background: #bdc3c7;
             cursor: col-resize;
             flex-shrink: 0;
+            transition: background 0.2s;
         }
         
-        .resizer:hover {
-            background: #3498db;
-        }
+        .resizer:hover { background: #3498db; }
         
         .editor-header {
             background: #ecf0f1;
@@ -120,17 +91,21 @@
             font-size: 12px;
             color: #555;
             border-bottom: 1px solid #ccc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
         .editor {
             flex: 1;
             border: none;
             padding: 16px;
-            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', monospace;
             font-size: 13px;
             line-height: 1.6;
             resize: none;
             outline: none;
+            tab-size: 2;
         }
         
         .preview-pane {
@@ -151,16 +126,7 @@
         .pdf-viewer {
             flex: 1;
             border: none;
-            background: white;
-        }
-        
-        .loading {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: #666;
-            font-size: 14px;
+            background: #525659;
         }
         
         .console-panel {
@@ -168,17 +134,15 @@
             bottom: 0;
             left: 0;
             right: 0;
-            height: 250px;
+            height: 280px;
             background: #1e1e1e;
-            border-top: 2px solid #3498db;
+            border-top: 3px solid #3498db;
             display: none;
             flex-direction: column;
             z-index: 1000;
         }
         
-        .console-panel.visible {
-            display: flex;
-        }
+        .console-panel.visible { display: flex; }
         
         .console-header {
             background: #2c2c2c;
@@ -193,38 +157,28 @@
         .console-close {
             background: transparent;
             border: none;
-            color: #ccc;
+            color: #888;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 18px;
             padding: 0 8px;
+            transition: color 0.2s;
         }
         
-        .console-close:hover {
-            color: #fff;
-        }
+        .console-close:hover { color: #fff; }
         
         .console-content {
             flex: 1;
             overflow-y: auto;
             padding: 12px;
-            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-family: 'JetBrains Mono', 'Monaco', monospace;
             font-size: 11px;
             line-height: 1.5;
             color: #d4d4d4;
             white-space: pre-wrap;
         }
         
-        .console-content .warning {
-            color: #f39c12;
-        }
-        
-        .console-content .error {
-            color: #e74c3c;
-        }
-        
-        .console-content .success {
-            color: #2ecc71;
-        }
+        .console-content .error { color: #e74c3c; }
+        .console-content .success { color: #27ae60; }
         
         .settings-textarea {
             width: 100%;
@@ -232,113 +186,89 @@
             background: #1e1e1e;
             color: #d4d4d4;
             border: none;
-            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-family: 'JetBrains Mono', 'Monaco', monospace;
             font-size: 12px;
             padding: 12px;
             resize: none;
             outline: none;
         }
         
-        /* Dark theme */
-        body.dark-theme {
-            background: #1e1e1e;
-        }
-        
-        body.dark-theme .header {
-            background: #1a1a1a;
-        }
-        
-        body.dark-theme .editor {
-            background: #2d2d2d;
-            color: #d4d4d4;
-        }
-        
+        body.dark-theme { background: #1e1e1e; }
+        body.dark-theme .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+        body.dark-theme .editor { background: #252526; color: #d4d4d4; }
         body.dark-theme .editor-header,
-        body.dark-theme .preview-header {
-            background: #252525;
-            color: #ccc;
-            border-bottom-color: #444;
-        }
+        body.dark-theme .preview-header { background: #2d2d2d; color: #ccc; border-bottom-color: #444; }
+        body.dark-theme .preview-pane { background: #1e1e1e; }
+        body.dark-theme .resizer { background: #444; }
         
-        body.dark-theme .preview-pane {
-            background: #2d2d2d;
-        }
-        
-        body.dark-theme .editor-pane {
-            border-right-color: #444;
-        }
-        
-        body.dark-theme .resizer {
-            background: #444;
-        }
-        
-        body.dark-theme .resizer:hover {
-            background: #3498db;
+        select.btn {
+            appearance: none;
+            padding-right: 24px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>Juleaf</h1>
-        <input type="text" class="project-title" id="projectTitle" value="My Document" placeholder="Project Title">
-        <select class="compile-btn" id="templateSelect" onchange="loadTemplate()" style="padding: 8px 12px;">
-            <option value="">Templates...</option>
-            <option value="basic">Basic Document</option>
-            <option value="beamer">Beamer Presentation</option>
-            <option value="ieee">IEEE Paper</option>
-            <option value="article">Academic Article</option>
+        <h1><img src="/logo" alt="Juleaf">Juleaf</h1>
+        <select class="btn" id="templateSelect" onchange="loadTemplate()">
+            <option value="">📄 Templates</option>
+            <option value="article">Article / Report</option>
+            <option value="ieee">IEEE Conference</option>
+            <option value="beamer">Beamer Slides</option>
+            <option value="letter">Letter</option>
+            <option value="mathpaper">Math Paper</option>
         </select>
-        <button class="compile-btn" onclick="compile()">Compile</button>
-        <button class="compile-btn" onclick="toggleConsole()">Console</button>
-        <button class="compile-btn" onclick="toggleSettings()">LaTeX Packages</button>
-        <button class="compile-btn" onclick="toggleTheme()" id="themeBtn">Dark Mode</button>
+        <button class="btn compile" onclick="compile()">▶ Compile</button>
+        <button class="btn" onclick="toggleConsole()">Console</button>
+        <button class="btn" onclick="toggleSettings()">⚙ Packages</button>
+        <button class="btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
         <span class="status" id="status">Ready</span>
     </div>
     
     <div class="container">
         <div class="editor-pane">
-            <div class="editor-header">document.jmd</div>
-            <textarea class="editor" id="editor">---
-title: "My Document"
+            <div class="editor-header">
+                <span id="editorHeader">document.jmd</span>
+                <span style="color:#888">Ctrl+S to compile</span>
+            </div>
+            <textarea class="editor" id="editor" spellcheck="false">---
+title: "Welcome to Juleaf"
+author: "Your Name"
+date: today
 ---
 
-## Introduction
+# Getting Started
 
-Welcome to this example document. Below is a plot of the sine function.
-```julia ; echo=true
-using CairoMakie
+**Juleaf** = Julia + Weave + LaTeX — write scientific documents with executable code!
 
-x = range(0, 2π, 100)
-y = sin.(x)
+## Features
 
-fig = Figure(size = (600, 400))
-ax = Axis(fig[1, 1], 
-    xlabel = "x", 
-    ylabel = "sin(x)",
-    title = "Sine Wave"
-)
-lines!(ax, x, y, color = :blue, linewidth = 2)
-fig
+- **Julia code execution** with inline results
+- **LaTeX math**: $E = mc^2$ and display equations
+- **Live PDF preview**
+
+## Example: Julia Code
+
+```julia
+using Statistics
+x = randn(100)
+println("Mean: ", round(mean(x), digits=3))
+println("Std:  ", round(std(x), digits=3))
 ```
 
-\begin{theorem}
-This is a theorem environment.
-\end{theorem}
+## Math Example
 
-## Analysis
-
-The sine function oscillates with period $2\pi$.
-
-### Mathematical Details
-
-The derivative is:
+The quadratic formula:
 $$
-\frac{d}{dx}\sin(x) = \cos(x)
+x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
 $$
-```julia ; echo=true
-# More code
-println("Hello from Julia!")
-```
+
+---
+
+Select a **template** from the dropdown to get started with IEEE papers, Beamer presentations, and more!
 </textarea>
         </div>
         
@@ -350,223 +280,347 @@ println("Hello from Julia!")
         </div>
     </div>
     
+    <div class="console-panel" id="console">
+        <div class="console-header">
+            <span>📋 Compilation Console</span>
+            <button class="console-close" onclick="toggleConsole()">×</button>
+        </div>
+        <div class="console-content" id="console-output">Waiting for compilation...</div>
+    </div>
+    
+    <div class="console-panel" id="settings">
+        <div class="console-header">
+            <span>⚙ LaTeX Packages (header-includes)</span>
+            <button class="console-close" onclick="toggleSettings()">×</button>
+        </div>
+        <div class="console-content">
+            <textarea id="custom-packages" class="settings-textarea" placeholder="Add LaTeX packages here, e.g.:
+\usepackage{algorithm}
+\usepackage{booktabs}
+
+These will be injected into header-includes."></textarea>
+        </div>
+    </div>
+    
     <script>
         const editor = document.getElementById('editor');
         const preview = document.getElementById('preview');
         const status = document.getElementById('status');
-        const compileBtn = document.querySelector('.compile-btn');
         const resizer = document.getElementById('resizer');
         const editorPane = document.querySelector('.editor-pane');
         const previewPane = document.getElementById('previewPane');
+        const editorHeader = document.getElementById('editorHeader');
         
         let compiling = false;
         let autoCompileTimeout = null;
-        let currentPage = 1;
         let isFirstCompile = true;
         let isResizing = false;
+        let currentFileType = 'jmd';
         
-        // Templates
         const templates = {
-            basic: `---
-title: "My Document"
----
-
-## Introduction
-
-Your content here.
-
-\`\`\`julia ; echo=true
-using CairoMakie
-x = range(0, 2π, 100)
-y = sin.(x)
-fig = Figure(size = (600, 400))
-lines(x, y)
-fig
-\`\`\``,
-            
-            beamer: `---
-title: "Presentation Title"
-subtitle: "Optional Subtitle"
-author: "Your Name\\\\\\\\Your Institution"
-date: "\\\\today"
-output:
-  beamer_presentation:
-    theme: "Madrid"
-    colortheme: "default"
-aspectratio: 169
+            article: {
+                code: `---
+title: "Article Title"
+author: "Author Name"
+date: today
 ---
 
 # Introduction
 
-## Motivation
+Your introduction here.
 
-- First key point
-- Second key point  
-- Third key point
+## Background
 
-## Research Question
+Background information with citations and references.
 
-What problem are we solving?
+# Methods
 
-# Background
+## Data Collection
 
-## Related Work
+Describe your methodology.
 
-Previous studies:
-
-- Study 1: Main finding
-- Study 2: Important result
-- Study 3: Key contribution
-
-# Methodology
-
-## Approach
-
-\`\`\`julia ; echo=true
-using CairoMakie
-x = range(0, 10, 100)
-y = sin.(x)
-fig = Figure(size = (800, 400))
-ax = Axis(fig[1, 1], xlabel = "X", ylabel = "Y")
-lines!(ax, x, y, linewidth = 2)
-fig
+\`\`\`julia
+using Statistics
+data = randn(1000)
+println("Sample size: ", length(data))
+println("Mean: ", round(mean(data), digits=4))
 \`\`\`
+
+## Analysis
+
+Mathematical formulation:
+$$
+\\mathcal{L}(\\theta) = \\sum_{i=1}^n \\log p(x_i | \\theta)
+$$
 
 # Results
 
-## Key Findings
+\`\`\`julia
+using CairoMakie
+fig = Figure(size=(500, 300))
+ax = Axis(fig[1,1], xlabel="Value", ylabel="Frequency")
+hist!(ax, data, bins=30)
+fig
+\`\`\`
 
-Our analysis shows significant improvement.
+# Conclusion
 
-| Method | Accuracy | Speed |
-|--------|----------|-------|
-| Ours   | 95%      | Fast  |
-| Baseline | 87%    | Slow  |
+Summary of findings.
+
+# References`,
+                packages: `\\usepackage{booktabs}
+\\usepackage{hyperref}`,
+                filetype: 'jmd'
+            },
+            
+            ieee: {
+                code: `---
+documentclass: IEEEtran
+classoption: conference
+---
+
+\\title{Your Paper Title Here}
+
+\\author{
+\\IEEEauthorblockN{First Author}
+\\IEEEauthorblockA{\\textit{Department Name} \\\\
+\\textit{University Name}\\\\
+City, Country \\\\
+email@example.com}
+\\and
+\\IEEEauthorblockN{Second Author}
+\\IEEEauthorblockA{\\textit{Department Name} \\\\
+\\textit{University Name}\\\\
+City, Country \\\\
+email@example.com}
+}
+
+\\maketitle
+
+\\begin{abstract}
+Your abstract here. Keep it concise (150-250 words).
+\\end{abstract}
+
+\\begin{IEEEkeywords}
+keyword1, keyword2, keyword3
+\\end{IEEEkeywords}
+
+\\section{Introduction}
+Introduction text here.
+
+\\section{Related Work}
+Literature review.
+
+\\section{Methodology}
+
+\\subsection{Problem Formulation}
+The optimization problem:
+$$
+\\min_{\\mathbf{x}} f(\\mathbf{x}) = \\|\\mathbf{Ax} - \\mathbf{b}\\|_2^2
+$$
+
+\\subsection{Implementation}
+
+\`\`\`julia
+using LinearAlgebra
+A = randn(100, 10)
+b = randn(100)
+x = A \\ b
+println("Solution norm: ", round(norm(x), digits=4))
+\`\`\`
+
+\\section{Results}
+
+\`\`\`julia
+using CairoMakie
+residual = A * x - b
+fig = Figure(size=(500, 300))
+ax = Axis(fig[1,1], xlabel="Index", ylabel="Residual")
+scatter!(ax, 1:length(residual), residual, markersize=4)
+fig
+\`\`\`
+
+\\section{Conclusion}
+Conclusions and future work.
+
+\\begin{thebibliography}{00}
+\\bibitem{b1} A. Author, "Paper Title," Journal Name, vol. 1, pp. 1-10, 2024.
+\\end{thebibliography}`,
+                packages: `\\usepackage{cite}
+\\usepackage{amsmath,amssymb}
+\\usepackage{graphicx}
+\\usepackage{xcolor}`,
+                filetype: 'jmd'
+            },
+            
+            beamer: {
+                code: `---
+title: "Presentation Title"
+author: "Your Name"
+institute: "Your Institution"
+date: today
+documentclass: beamer
+theme: Madrid
+colortheme: whale
+---
+
+# Introduction
+
+## Welcome
+
+This is a **Beamer presentation** created with Juleaf!
+
+Features:
+
+- Julia code execution
+- LaTeX math support  
+- Automatic PDF generation
+
+## Outline
+
+1. Introduction
+2. Methods
+3. Results
+4. Conclusion
+
+# Methods
+
+## Mathematical Framework
+
+The key equation:
+
+$$
+\\nabla f(x) = \\sum_{i=1}^n \\frac{\\partial f}{\\partial x_i} \\mathbf{e}_i
+$$
+
+## Algorithm
+
+1. Initialize parameters
+2. Compute gradient
+3. Update weights
+4. Repeat until convergence
+
+# Results
+
+## Numerical Example
+
+\`\`\`julia
+using Statistics
+x = randn(1000)
+println("Mean: ", round(mean(x), digits=4))
+println("Std:  ", round(std(x), digits=4))
+\`\`\`
+
+## Visualization
+
+\`\`\`julia
+using CairoMakie
+fig = Figure(size=(450, 280))
+ax = Axis(fig[1,1], xlabel="x", ylabel="Density")
+hist!(ax, x, bins=25, normalization=:pdf)
+fig
+\`\`\`
 
 # Conclusion
 
 ## Summary
 
-- Main contribution
-- Future work
-- Questions?`,
+- Point 1
+- Point 2
+- Point 3
+
+## Thank You!
+
+Questions?
+
+**Contact:** your.email@example.com`,
+                packages: ``,
+                filetype: 'jmd'
+            },
             
-   ieee: `---
-documentclass: IEEEtran
-classoption: conference
+            letter: {
+                code: `---
+documentclass: letter
+---
+
+\\documentclass{letter}
+\\usepackage[margin=1in]{geometry}
+
+\\address{Your Name \\\\ Your Address \\\\ City, Country}
+\\date{\\today}
+
+\\begin{document}
+
+\\begin{letter}{Recipient Name \\\\ Recipient Address \\\\ City, Country}
+
+\\opening{Dear Sir or Madam,}
+
+I am writing to inquire about...
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+
+\\closing{Sincerely,}
+
+\\end{letter}
+
+\\end{document}`,
+                packages: ``,
+                filetype: 'jmd'
+            },
+            
+            mathpaper: {
+                code: `---
+title: "Mathematical Analysis"
+author: "Author Name"
+date: today
 header-includes:
-  - \\usepackage{amsmath,amssymb}
+  - \\usepackage{amsthm}
   - \\newtheorem{theorem}{Theorem}
   - \\newtheorem{lemma}{Lemma}
   - \\newtheorem{definition}{Definition}
-  - \\newtheorem{corollary}{Corollary}
----
-
-\\\\title{Conference Paper Title}
-
-\\\\author{
-\\\\IEEEauthorblockN{First Author}
-\\\\IEEEauthorblockA{\\\\textit{Department} \\\\
-\\\\textit{University}\\\\
-City, Country \\\\
-email@domain.com}
-\\\\and
-\\\\IEEEauthorblockN{Second Author}
-\\\\IEEEauthorblockA{\\\\textit{Department} \\\\
-\\\\textit{University}\\\\
-City, Country \\\\
-email@domain.com}
-}
-
-\\\\maketitle
-
-\\\\begin{abstract}
-Abstract text here (150--250 words).
-\\\\end{abstract}
-
-\\\\begin{IEEEkeywords}
-keyword1, keyword2, keyword3
-\\\\end{IEEEkeywords}
-
-# Introduction
-
-Introduction text.
-
-# Related Work
-
-Literature review.
-
-# Methodology
-
-## Problem Formulation
-
-$$
-\\\\min_{x} f(x) = \\\\sum_{i=1}^{n} (y_i - \\\\hat{y}_i)^2
-$$
-
-## Approach
-
-\`\`\`julia ; echo=true
-using Statistics
-n = 100
-x = randn(n)
-y = 2 .* x .+ randn(n) * 0.1
-\`\`\`
-
-# Results
-
-\`\`\`julia ; echo=true
-using CairoMakie
-fig = Figure(size = (600, 400))
-ax = Axis(fig[1, 1], xlabel = "X", ylabel = "Y")
-scatter!(ax, x, y)
-fig
-\`\`\`
-
-# Conclusion
-
-Summary and future work.
-
-\\\\begin{thebibliography}{00}
-\\\\bibitem{b1} Author, "Title," Journal, vol. X, pp. Y-Z, Year.
-\\\\end{thebibliography}`
-,
-            article: `---
-title: "Article Title"
-author: "Your Name"
-date: "\\\\today"
-abstract: |
-  Abstract (150-250 words).
 ---
 
 # Introduction
 
-Background and motivation.
+This document demonstrates mathematical typesetting with Julia computations.
 
+# Preliminaries
+
+\\begin{definition}
+A function $f: \\mathbb{R} \\to \\mathbb{R}$ is \\textbf{continuous} at $x_0$ if:
 $$
-f(x) = \\\\int_{0}^{\\\\infty} e^{-x^2} dx
+\\lim_{x \\to x_0} f(x) = f(x_0)
 $$
+\\end{definition}
 
-# Methodology
+# Main Results
 
-\`\`\`julia ; echo=true
-using CairoMakie, Statistics
-data = randn(1000)
-fig = Figure(size = (700, 400))
-ax = Axis(fig[1, 1], xlabel = "Value", ylabel = "Frequency")
-hist!(ax, data, bins = 30)
-fig
+\\begin{theorem}
+Let $f$ be continuous on $[a,b]$. Then $f$ is integrable on $[a,b]$.
+\\end{theorem}
+
+\\begin{lemma}
+For any $\\epsilon > 0$, there exists $\\delta > 0$ such that...
+\\end{lemma}
+
+## Numerical Verification
+
+\`\`\`julia
+using QuadGK
+
+f(x) = exp(-x^2)
+result, err = quadgk(f, -Inf, Inf)
+println("∫ exp(-x²) dx = ", round(result, digits=6))
+println("√π = ", round(sqrt(π), digits=6))
 \`\`\`
-
-# Results
-
-\\\\begin{theorem}
-Main theoretical result.
-\\\\end{theorem}
 
 # Conclusion
 
-Summary and future directions.`
+The numerical results confirm the theoretical predictions.`,
+                packages: `\\usepackage{amsmath,amssymb}
+\\usepackage{mathtools}`,
+                filetype: 'jmd'
+            }
         };
         
         function loadTemplate() {
@@ -574,35 +628,36 @@ Summary and future directions.`
             const key = select.value;
             
             if (key && templates[key]) {
-                if (confirm('Load template? Current content will be replaced.')) {
-                    editor.value = templates[key];
+                if (confirm('Load template? This replaces current content.')) {
+                    editor.value = templates[key].code;
+                    document.getElementById('custom-packages').value = templates[key].packages;
+                    localStorage.setItem('latex-packages', templates[key].packages);
+                    currentFileType = templates[key].filetype;
+                    editorHeader.textContent = `document.${currentFileType}`;
                     compile();
                 }
                 select.value = '';
             }
         }
         
-        // Resizer functionality
+        // Resizer
         resizer.addEventListener('mousedown', (e) => {
             isResizing = true;
             document.body.style.cursor = 'col-resize';
             document.body.style.userSelect = 'none';
+            e.preventDefault();
         });
-        
+
         document.addEventListener('mousemove', (e) => {
             if (!isResizing) return;
-            
             const containerWidth = document.querySelector('.container').offsetWidth;
-            const newEditorWidth = e.clientX;
-            const editorPercent = (newEditorWidth / containerWidth) * 100;
-            const previewPercent = 100 - editorPercent;
-            
-            if (editorPercent > 20 && editorPercent < 80) {
-                editorPane.style.flex = `0 0 ${editorPercent}%`;
-                previewPane.style.flex = `0 0 ${previewPercent}%`;
+            const percent = (e.clientX / containerWidth) * 100;
+            if (percent > 20 && percent < 80) {
+                editorPane.style.flex = `0 0 ${percent}%`;
+                previewPane.style.flex = `0 0 ${100 - percent}%`;
             }
         });
-        
+
         document.addEventListener('mouseup', () => {
             if (isResizing) {
                 isResizing = false;
@@ -615,95 +670,52 @@ Summary and future directions.`
             if (compiling) return;
             
             compiling = true;
-            compileBtn.disabled = true;
-            status.textContent = 'Compiling...';
+            status.textContent = '⏳ Compiling...';
             
             try {
-                let content = editor.value;
-                
-                // Inject dark theme if enabled
-                const isDark = document.body.classList.contains('dark-theme');
-                if (isDark) {
-                    if (content.trim().startsWith('---')) {
-                        const firstEnd = content.indexOf('---', 3);
-                        if (firstEnd !== -1) {
-                            const yamlSection = content.slice(0, firstEnd);
-                            
-                            if (yamlSection.includes('header-includes:')) {
-                                const lines = content.split('\n');
-                                const headerIndex = lines.findIndex(l => l.includes('header-includes:'));
-                                
-                                lines.splice(headerIndex + 1, 0, 
-                                    '  - \\usepackage{xcolor}',
-                                    '  - \\pagecolor[RGB]{30,30,30}',
-                                    '  - \\color[RGB]{220,220,220}'
-                                );
-                                content = lines.join('\n');
-                            } else {
-                                const darkTheme = '\nheader-includes:\n  - \\usepackage{xcolor}\n  - \\pagecolor[RGB]{30,30,30}\n  - \\color[RGB]{220,220,220}\n';
-                                content = content.slice(0, firstEnd) + darkTheme + content.slice(firstEnd);
-                            }
-                        }
-                    }
-                }
-                
+                const content = editor.value;
                 const packages = document.getElementById('custom-packages').value;
                 
                 const response = await fetch('/compile', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'text/plain',
-                        'X-LaTeX-Packages': btoa(packages)
+                        'X-LaTeX-Packages': btoa(unescape(encodeURIComponent(packages))),
+                        'X-File-Type': currentFileType
                     },
                     body: content
                 });
                 
                 const logsHeader = response.headers.get('X-Compilation-Logs');
                 if (logsHeader) {
-                    const logs = atob(logsHeader);
-                    displayLogs(logs, !isFirstCompile);
+                    try {
+                        const logs = decodeURIComponent(escape(atob(logsHeader)));
+                        displayLogs(logs);
+                    } catch { displayLogs(atob(logsHeader)); }
                 }
                 
                 if (response.ok) {
-                    if (isFirstCompile) {
-                        preview.src = '/output.pdf';
-                        isFirstCompile = false;
-                    } else {
-                        try {
-                            preview.contentWindow.location.reload();
-                        } catch (e) {
-                            const timestamp = new Date().getTime();
-                            preview.src = '/output.pdf?t=' + timestamp;
-                        }
-                    }
-                    
-                    status.textContent = 'Compiled successfully';
-                    setTimeout(() => {
-                        status.textContent = 'Ready';
-                    }, 2000);
+                    const timestamp = Date.now();
+                    preview.src = '/output.pdf?t=' + timestamp;
+                    isFirstCompile = false;
+                    status.textContent = '✓ Compiled';
+                    setTimeout(() => status.textContent = 'Ready', 2000);
                 } else {
-                    const error = await response.text();
-                    status.textContent = 'Compilation failed';
-                    displayLogs(error, true);
-                    console.error('Compilation error:', error);
+                    status.textContent = '✗ Failed';
+                    document.getElementById('console').classList.add('visible');
+                    document.querySelector('.container').classList.add('panel-open');
                 }
-                
-                isFirstCompile = false;
             } catch (error) {
-                status.textContent = 'Error';
-                console.error('Error:', error);
-                alert('Error: ' + error.message);
+                status.textContent = '✗ Error';
+                console.error(error);
             } finally {
                 compiling = false;
-                compileBtn.disabled = false;
             }
         }
         
         editor.addEventListener('input', () => {
             clearTimeout(autoCompileTimeout);
-            autoCompileTimeout = setTimeout(() => {
-                compile();
-            }, 500);
+            autoCompileTimeout = setTimeout(compile, 1500);
         });
         
         document.addEventListener('keydown', (e) => {
@@ -713,110 +725,52 @@ Summary and future directions.`
             }
         });
         
-        setTimeout(() => compile(), 500);
-        
         function toggleConsole() {
             const consolePanel = document.getElementById('console');
             const settingsPanel = document.getElementById('settings');
             const container = document.querySelector('.container');
-            
-            if (settingsPanel.classList.contains('visible')) {
-                settingsPanel.classList.remove('visible');
-            }
-            
+            settingsPanel.classList.remove('visible');
             consolePanel.classList.toggle('visible');
-            
-            if (consolePanel.classList.contains('visible')) {
-                container.classList.add('panel-open');
-            } else {
-                container.classList.remove('panel-open');
-            }
+            container.classList.toggle('panel-open', consolePanel.classList.contains('visible'));
         }
         
         function toggleSettings() {
             const consolePanel = document.getElementById('console');
             const settingsPanel = document.getElementById('settings');
             const container = document.querySelector('.container');
-            
-            if (consolePanel.classList.contains('visible')) {
-                consolePanel.classList.remove('visible');
-            }
-            
+            consolePanel.classList.remove('visible');
             settingsPanel.classList.toggle('visible');
-            
-            if (settingsPanel.classList.contains('visible')) {
-                container.classList.add('panel-open');
-            } else {
-                container.classList.remove('panel-open');
-            }
+            container.classList.toggle('panel-open', settingsPanel.classList.contains('visible'));
         }
         
         function toggleTheme() {
             document.body.classList.toggle('dark-theme');
             const isDark = document.body.classList.contains('dark-theme');
-            document.getElementById('themeBtn').textContent = isDark ? 'Light Mode' : 'Dark Mode';
+            document.getElementById('themeBtn').textContent = isDark ? '☀️' : '🌙';
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
         }
         
         if (localStorage.getItem('theme') === 'dark') {
             document.body.classList.add('dark-theme');
-            document.getElementById('themeBtn').textContent = 'Light Mode';
+            document.getElementById('themeBtn').textContent = '☀️';
         }
         
-        function displayLogs(logs, shouldAutoShow = true) {
+        function displayLogs(logs) {
             const consoleOutput = document.getElementById('console-output');
-            
             let formatted = logs
-                .replace(/LaTeX Warning:/g, '<span class="warning">LaTeX Warning:</span>')
-                .replace(/Warning:/g, '<span class="warning">Warning:</span>')
                 .replace(/Error:/g, '<span class="error">Error:</span>')
-                .replace(/ERROR:/g, '<span class="error">ERROR:</span>');
-            
+                .replace(/✓/g, '<span class="success">✓</span>')
+                .replace(/✗/g, '<span class="error">✗</span>');
             consoleOutput.innerHTML = formatted;
         }
         
-        // Save and load custom packages
-        document.getElementById('custom-packages').addEventListener('input', (e) => {
+        const packagesTextarea = document.getElementById('custom-packages');
+        packagesTextarea.value = localStorage.getItem('latex-packages') || '';
+        packagesTextarea.addEventListener('input', (e) => {
             localStorage.setItem('latex-packages', e.target.value);
         });
         
-        const defaultPackages = `\\usepackage{amsthm}
-\\usepackage{amsmath}
-\\usepackage{amssymb}
-\\newtheorem{theorem}{Theorem}
-\\newtheorem{lemma}{Lemma}
-\\newtheorem{definition}{Definition}
-\\newtheorem{corollary}{Corollary}`;
-        
-        if (localStorage.getItem('latex-packages')) {
-            document.getElementById('custom-packages').value = localStorage.getItem('latex-packages');
-        } else {
-            document.getElementById('custom-packages').value = defaultPackages;
-            localStorage.setItem('latex-packages', defaultPackages);
-        }
+        window.addEventListener('load', compile);
     </script>
-    
-    <div class="console-panel" id="console">
-        <div class="console-header">
-            <span>Compilation Console</span>
-            <button class="console-close" onclick="toggleConsole()">×</button>
-        </div>
-        <div class="console-content" id="console-output">
-            No compilation output yet...
-        </div>
-    </div>
-    
-    <div class="console-panel" id="settings">
-        <div class="console-header">
-            <span>LaTeX Packages & Theorem Environments</span>
-            <button class="console-close" onclick="toggleSettings()">×</button>
-        </div>
-        <div class="console-content">
-            <textarea id="custom-packages" class="settings-textarea" placeholder="Add custom LaTeX packages, one per line:
-\usepackage{tikz}
-\usepackage{pgfplots}
-\newtheorem{proposition}{Proposition}"></textarea>
-        </div>
-    </div>
 </body>
 </html>
