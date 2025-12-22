@@ -1,8 +1,16 @@
 # 🍃 Juleaf
 
-**Julia + Weave + LaTeX** — Scientific documents with executable code.
+<p align="center">
+  <img src="templates/juleaf_logo.png" alt="Juleaf Logo" width="150">
+</p>
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
+<p align="center">
+  <strong>Julia + Weave + LaTeX</strong> — Scientific documents with executable code.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License">
+</p>
 
 ## Features
 
@@ -59,7 +67,7 @@ Download from [pandoc.org](https://pandoc.org/installing.html)
 ### 4. Juleaf
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/juleaf.git
+git clone https://github.com/bakimane/juleaf.git
 cd juleaf
 julia -e 'using Pkg; Pkg.add(["HTTP", "Weave"])'
 julia server.jl
