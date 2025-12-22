@@ -336,7 +336,7 @@ HTTP.register!(router, "GET", "/workspace/{filename}", req -> begin
     end
 end)
 
-println("Juleaf server starting on http://localhost:$PORT")
-println("Templates: $TEMPLATES_DIR")
+println("🚀 Juleaf server starting on http://localhost:$PORT")
+println("📁 Templates: $TEMPLATES_DIR")
 
 HTTP.serve(router, "0.0.0.0", PORT)
