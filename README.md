@@ -100,4 +100,4 @@ Open http://localhost:8080
 
 ## License
 
-MIT
+[MIT License](LICENSE)
