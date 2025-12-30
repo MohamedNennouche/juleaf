@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License">
 </p>
 
-## Features
+## 1. Features
 
 - 📝 Julia code execution in documents
 - 📐 LaTeX math rendering
@@ -20,9 +20,9 @@
 - ✨ AI assist (Groq/Claude)
 - 🌙 Dark mode
 
-## Install
+## 2. Install
 
-### 1. Julia
+### 2.1. Julia
 
 **macOS**
 ```bash
@@ -37,7 +37,7 @@ curl -fsSL https://install.julialang.org | sh
 **Windows**  
 Download from [julialang.org/downloads](https://julialang.org/downloads/)
 
-### 2. TinyTeX (LaTeX)
+### 2.2. TinyTeX (LaTeX)
 
 **macOS/Linux**
 ```bash
@@ -49,7 +49,7 @@ curl -sL "https://yihui.org/tinytex/install-bin-unix.sh" | sh
 Invoke-WebRequest -Uri "https://yihui.org/tinytex/install-windows.bat" -OutFile "install.bat"; .\install.bat
 ```
 
-### 3. Pandoc
+### 2.3. Pandoc
 
 **macOS**
 ```bash
@@ -64,7 +64,7 @@ sudo apt install pandoc
 **Windows**  
 Download from [pandoc.org](https://pandoc.org/installing.html)
 
-### 4. Juleaf
+### 2.4. Juleaf
 
 ```bash
 git clone https://github.com/bakimane/juleaf.git
@@ -75,7 +75,7 @@ julia server.jl
 
 Open http://localhost:8080
 
-## Templates
+## 3. Templates
 
 | Template | Use Case |
 |----------|----------|
@@ -85,7 +85,7 @@ Open http://localhost:8080
 | Letter | Formal letters |
 | Math | Theorems, proofs |
 
-## Shortcuts
+## 4. Shortcuts
 
 | Key | Action |
 |-----|--------|
@@ -93,11 +93,15 @@ Open http://localhost:8080
 | `Ctrl+Enter` | Compile |
 | `Ctrl+I` | AI assist |
 
-## AI (Optional)
+## 5. Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+
+## 6. AI (Optional)
 
 1. Get free key at [console.groq.com](https://console.groq.com)
 2. Click ✨ AI → paste key
 
-## License
+## 7. License
 
-[MIT License](LICENSE)
+This project is licensed under MIT License - see the [LICENSE](LICENSE) file for details.
