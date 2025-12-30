@@ -468,6 +468,8 @@ $$\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}$$
 Use triple backticks with `julia`:
 
 ```julia
+using Pkg
+Pkg.add(["Statistics", "CairoMakie"])
 using Statistics
 x = randn(100)
 println("Mean: ", round(mean(x), digits=3))
@@ -698,6 +700,8 @@ date: today
 Your text here.
 
 \`\`\`julia
+using Pkg
+Pkg.add(["Statistics", "CairoMakie", "LinearAlgebra"])
 using Statistics
 data = randn(1000)
 println("Mean: ", round(mean(data), digits=4))
